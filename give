@@ -130,7 +130,7 @@ function _ungive() {
 
     while [[ -n "$1" ]]; do
         validate "$1"
-        env rm -- "$target_dir/$1" || error "could not delete file from temporary gift storage!"
+        env rm -f -- "$target_dir/$1" || error "could not delete file from temporary gift storage!"
     done      
 }
 
@@ -154,7 +154,7 @@ function _take() {
     fi
 
     cwd="$(pwd)"
-    (cd "$target_dir" && env cp --target-directory="$cwd" "$@" && env rm "$@" )
+    (cd "$target_dir" && env cp --target-directory="$cwd" "$@" && env rm -f "$@" )
 }
 
 
