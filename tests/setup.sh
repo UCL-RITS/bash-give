@@ -9,6 +9,9 @@ done
 sudo --non-interactive mkdir -p "$GIFT_STORE"
 sudo --non-interactive chmod 1777 "$GIFT_STORE"
 
+echo "--> Created gift store: $GIFT_STORE"
+stat "$GIFT_STORE"
+
 dir_stack="$PARENT_DIR"
 declare -a dir_array
 while [[ "$dir_stack" != "/" ]]; do
