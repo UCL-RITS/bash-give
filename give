@@ -1,0 +1,178 @@
+#!/bin/bash
+
+set -o errexit \
+    -o pipefail \
+    -o nounset
+
+GIFT_DEBUG=1 # remove this line in prod
+debug_mode="${GIFT_DEBUG:-0}"
+gift_store="/scratch/scratch/gift-store"
+
+function error() {
+  echo "Error: $*" >&2
+  [[ "${debug_mode:-0}" -eq 1 ]] && callstack
+  exit 1
+}
+
+function callstack() {
+    echo --- Trace: ---
+    local i
+    # These indexes start at 0 but 0 is this callstack function, so skip it.
+    for ((i=1; i<${#FUNCNAME[*]}; i++)) do
+        if [ $i -ne 1 ]; then 
+            echo -n "  "  
+        fi
+        echo "${BASH_SOURCE[$i]}: in \"${FUNCNAME[$i]}\" called from line ${BASH_LINENO[$i]}"
+    done
+    echo --------------
+}
+
+[[ "${debug_mode:-0}" -eq 1 ]] && trap callstack ERR
+
+function validate() {
+  for arg in "$@"; do
+      if [[ ! -a "$arg" ]]; then
+          error "file passed does not exist: $arg"
+      elif [[ ! -f "$arg" ]]; then
+          error "this script only works on files -- could not use: $arg"
+      fi
+  done
+}
+
+
+function print_help_give() {
+  echo "Usage: give USER FILE"
+}
+function print_help_take() {
+  echo "Usage: take USER FILE"
+}
+function print_help_ungive() {
+  echo "Usage: ungive USER FILE"
+}
+
+
+
+function get_uids() {
+    # Checks that the id for the current user and a target user
+    #  can be obtained.
+    # Sets my_uid and their_uid
+    if [[ $# -ne 1 ]]; then
+        error "get_uids expects one (and only one) argument (target user)"
+    fi
+    their_uname="${1:-INVALID_USER_NAME}"
+    my_uid="$(/bin/id -u)" || error "could not get id for current user"
+    their_uid="$(/bin/id -u "$their_uname")" || error "could not get id for target user ($1)"
+}
+
+does_gift_store_exist() {
+    [[ -d "$gift_store" ]] || error "gift store directory does not exist ($gift_store)"
+}
+
+function _give() {
+    # $1: target username
+    # $2: target file
+    # --
+    if [[ $# -ne 2 ]]; then
+        print_help_give
+        exit 1
+    fi
+
+    their_uname="$1"
+    shift
+
+    get_uids "$their_uname"
+
+    target_dir="$gift_store/$my_uid-$their_uid"
+    if [[ ! -d "$target_dir" ]]; then
+        if [[ -d "$gift_store" ]] && [[ -w "$gift_store" ]]; then
+            mkdir "$target_dir"
+            chmod 700 "$target_dir"
+            setfacl -m "u:$their_uid:rwx" "$gift_store/$my_uid-$their_uid"
+        else
+            error "spool dir for giving does not exist or cannot be used! (This is a system administrator problem.)"
+        fi
+    else
+        if [[ ! -w "$target_dir" ]]; then
+            error "target directory for temporary storage cannot be written to! Please fix the permissions of contact support."
+        fi
+        if [[ "$(stat -c %u -- "$target_dir")" -ne "$my_uid" ]]; then
+            error "target directory for temporary storage should be owned by you and is not. Please contact support."
+        fi
+    fi
+
+    validate "$@"
+    /usr/bin/cp --target-directory="$target_dir" -- "$@"
+}
+
+function _ungive() {
+    if [[ $# -ne 2 ]]; then
+        # $1: target username
+        # $2: target file
+        # --
+        print_help_ungive
+        exit 1
+    fi
+
+    their_uname="$1"
+    shift
+
+    my_uid="$(/bin/id -u)"
+    their_uid="$(/bin/id -u "$their_uname")"
+
+    target_dir="$gift_store/$my_uid-$their_uid"
+    if [[ ! -d "$target_dir" ]]; then
+        error "you have not given $their_uname any files."
+    fi
+
+    while [[ -n "$1" ]]; do
+        validate "$1"
+        /usr/bin/rm -- "$target_dir/$1" || error "could not delete file from temporary gift storage!"
+    done      
+}
+
+function _take() {
+    if [[ $# -lt 2 ]]; then
+        print_help_take
+        exit 1
+    fi
+
+    their_uname="$1"
+    shift
+
+    my_uid="$(/bin/id -u)"
+    their_uid="$(/bin/id -u "$their_uname")"
+
+
+    target_dir="$gift_store/$their_uid-$my_uid"
+
+    if [[ ! -d "$target_dir" ]]; then
+        error "$their_uname has not given you any files."
+    fi
+
+    cwd="$(pwd)"
+    (cd "$target_dir" && /usr/bin/cp --target-directory="$cwd" "$@" && /usr/bin/rm "$@" )
+}
+
+
+
+
+#### Main below
+
+script_mode="$(basename "$0")"
+
+case "$script_mode" in
+    "give")
+        _give "$@"
+        ;;
+    "ungive")
+        _ungive "$@"
+        ;;
+    "take")
+        _take "$@"
+        ;;
+    *)
+        error "this script is very confused. It knows it should be called 'give', 'ungive', or 'take', but is not??" 
+        ;;
+esac
+
+
