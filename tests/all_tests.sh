@@ -37,7 +37,7 @@ function callstack() {
     echo --------------
 }
 
-[[ "$debug_mode:-0}" -eq 1 ]] && trap callstack ERR
+[[ "${debug_mode:-0}" -eq 1 ]] && trap callstack ERR
 
 #==================================
 
