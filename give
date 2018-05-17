@@ -84,16 +84,20 @@ function _give() {
 
     target_dir="$gift_store/$my_uid-$their_uid"
     if [[ ! -d "$target_dir" ]]; then
-        if [[ -d "$gift_store" ]] && [[ -w "$gift_store" ]]; then
-            mkdir "$target_dir"
-            chmod 700 "$target_dir"
-            setfacl -m "u:$their_uid:rwx" "$gift_store/$my_uid-$their_uid"
+        if [[ -d "$gift_store" ]]; then
+            if [[ -w "$gift_store" ]]; then
+                mkdir "$target_dir"
+                chmod 700 "$target_dir"
+                setfacl -m "u:$their_uid:rwx" "$gift_store/$my_uid-$their_uid"
+            else
+                error "spool dir cannot be used: cannot create giving directory there. Please contact support."
+            fi
         else
-            error "spool dir for giving does not exist or cannot be used! (This is a system administrator problem.)"
+            error "spool dir for giving does not exist! Please contact support."
         fi
     else
         if [[ ! -w "$target_dir" ]]; then
-            error "target directory for temporary storage cannot be written to! Please fix the permissions of contact support."
+            error "target directory for temporary storage cannot be written to! Please contact support."
         fi
         if [[ "$(stat -c %u -- "$target_dir")" -ne "$my_uid" ]]; then
             error "target directory for temporary storage should be owned by you and is not. Please contact support."
