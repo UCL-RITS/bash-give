@@ -2,13 +2,16 @@
 
 set -o nounset \
     -o errexit \
-    -o pipefail
+    -o pipefail \
 
-PARENT_DIR="$TRAVIS_BUILD_DIR"
-TEST_DIR="$TRAVIS_BUILD_DIR/tests"
+
+export PARENT_DIR="$TRAVIS_BUILD_DIR"
+export TESTS_DIR="$TRAVIS_BUILD_DIR/tests"
 
 export PATH="$PARENT_DIR:$PATH"
 
-"$TEST_DIR/setup.sh"
+export GIFT_STORE="/gift-store"
 
-"$TEST_DIR/test_1.sh"
+"$TESTS_DIR/setup.sh"
+
+"$TESTS_DIR/test_1.sh"
