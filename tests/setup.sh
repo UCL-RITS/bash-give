@@ -1,5 +1,7 @@
 #!/bin/bash
 
+sudo --non-interactive chmod a+rx "$PARENT_DIR"
+
 for loop_user in user_1 user_2 user_3; do
     sudo useradd --create-home --user-group $loop_user
 done
