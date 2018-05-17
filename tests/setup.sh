@@ -3,9 +3,18 @@
 sudo --non-interactive chmod a+rx "$PARENT_DIR"
 
 for loop_user in user_1 user_2 user_3; do
-    sudo useradd --create-home --user-group $loop_user
+    sudo --non-interactive useradd --create-home --user-group $loop_user
 done
 
-sudo mkdir -p "$GIFT_STORE"
-sudo chmod 1777 "$GIFT_STORE"
+sudo --non-interactive mkdir -p "$GIFT_STORE"
+sudo --non-interactive chmod 1777 "$GIFT_STORE"
+
+dir_stack="$PARENT_DIR"
+declare -a dir_array
+while [[ "$dir_stack" != "/" ]]; do
+    dir_stack="$(dirname "$dir_stack")"
+    dir_array+=("$dir_stack")
+done
+
+sudo chmod +rx "${dir_array[@]}"
 
