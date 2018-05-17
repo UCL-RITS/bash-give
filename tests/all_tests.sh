@@ -16,6 +16,8 @@ export GIFT_STORE="/gift-store"
 # Defs for better error reporting
 #===================================
 
+export debug_mode=1
+
 function error() {
   echo "Error: $*" >&2
   [[ "${debug_mode:-0}" -eq 1 ]] && callstack
