@@ -6,7 +6,7 @@ set -o errexit \
 
 GIFT_DEBUG=1 # remove this line in prod
 debug_mode="${GIFT_DEBUG:-0}"
-gift_store="/scratch/scratch/gift-store"
+gift_store="${GIFT_STORE:-/scratch/scratch/gift-store}"
 
 function error() {
   echo "Error: $*" >&2
