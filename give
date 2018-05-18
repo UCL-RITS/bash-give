@@ -151,6 +151,10 @@ function _take() {
 
     if [[ ! -d "$target_dir" ]]; then
         error "$their_uname has not given you any files."
+    else
+        if [[ "$(stat -c %u -- "$target_dir")" -ne "$their_uid" ]]; then
+            error "target directory for temporary storage should be owned by the gifter and is not. Please contact support."
+        fi
     fi
 
     cwd="$(pwd)"
