@@ -90,17 +90,20 @@ function _give() {
                 chmod 700 "$target_dir"
                 setfacl -m "u:$their_uid:rwx" "$gift_store/$my_uid-$their_uid"
             else
-                error "spool dir cannot be used: cannot create giving directory there. Please contact support."
+                error "spool dir \"$gift_store\" cannot be used: cannot create giving directory there. Please contact support."
             fi
         else
-            error "spool dir for giving does not exist! Please contact support."
+            error "spool dir \"$gift_store\" for giving does not exist! Please contact support."
         fi
     else
         if [[ ! -w "$target_dir" ]]; then
-            error "target directory for temporary storage cannot be written to! Please contact support."
+            error "target directory for temporary storage \"$target_dir\" cannot be written to! Please contact support."
         fi
-        if [[ "$(stat -c %u -- "$target_dir")" -ne "$my_uid" ]]; then
-            error "target directory for temporary storage should be owned by you and is not. Please contact support."
+
+        local target_dir_owner_id
+        target_dir_owner_id="$(stat -c %u -- "$target_dir")"
+        if [[ "$target_dir_owner_id" -ne "$my_uid" ]]; then
+            error "target directory for temporary storage \"$target_dir\" should be owned by you and is not (owned by $target_dir_owner_id). Please contact support."
         fi
     fi
 
@@ -130,7 +133,7 @@ function _ungive() {
 
     while [[ -n "$1" ]]; do
         validate "$1"
-        env rm -f -- "$target_dir/$1" || error "could not delete file from temporary gift storage!"
+        env rm -f -- "$target_dir/$1" || error "could not delete file \"$1\" from temporary gift storage!"
     done      
 }
 
@@ -152,8 +155,10 @@ function _take() {
     if [[ ! -d "$target_dir" ]]; then
         error "$their_uname has not given you any files."
     else
-        if [[ "$(stat -c %u -- "$target_dir")" -ne "$their_uid" ]]; then
-            error "target directory for temporary storage should be owned by the gifter and is not. Please contact support."
+        local target_dir_owner_id
+        target_dir_owner_id="$(stat -c %u -- "$target_dir")"
+        if [[ "$target_dir_owner_id" -ne "$their_uid" ]]; then
+            error "target directory for temporary storage \"$target_dir\" should be owned by the gifter and is not (owned by $target_dir_owner_id). Please contact support."
         fi
     fi
 
