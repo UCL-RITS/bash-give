@@ -41,6 +41,8 @@ function callstack() {
 
 #==================================
 
+printf "Using gift store: %s\n" "$GIFT_STORE"
+
 printf "Running test setup..."
 source "$TESTS_DIR/setup.sh"
 printf "\n"
