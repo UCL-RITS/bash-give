@@ -41,7 +41,14 @@ function callstack() {
 
 #==================================
 
+printf "Running test setup..."
 "$TESTS_DIR/setup.sh"
+printf "\n"
 
+printf "Test 1..."
 "$TESTS_DIR/test_1.sh"
+printf "\n"
+
+printf "Test 2..."
 "$TESTS_DIR/test_2.sh"
+printf "\n"
