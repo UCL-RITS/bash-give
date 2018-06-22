@@ -6,3 +6,4 @@ sudo --non-interactive --user=user_2 bash -c "export GIFT_STORE=\"$GIFT_STORE\";
 
 sudo --non-interactive diff ~user_1/test_data ~user_2/test_data
 
+sudo --non-interactive rm -rf "$GIFT_STORE/*" ~user_1/test_data ~user_2/test_data

@@ -2,6 +2,8 @@
 
 # Tests for failure when gift dir for user_1 is owned by !user_1
 
+sudo --non-interactive rm -rf "$GIFT_STORE"/* || true
+
 sudo --non-interactive --user=user_3 mkdir -p "$GIFT_STORE"/"$(id -u user_1)"-"$(id -u user_2)"
 
 sudo --non-interactive --user=user_1 cp "$TESTS_DIR/test_data" ~user_1/
