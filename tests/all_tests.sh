@@ -44,3 +44,4 @@ function callstack() {
 "$TESTS_DIR/setup.sh"
 
 "$TESTS_DIR/test_1.sh"
+"$TESTS_DIR/test_2.sh"
