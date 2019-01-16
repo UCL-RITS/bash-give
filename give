@@ -4,7 +4,6 @@ set -o errexit \
     -o pipefail \
     -o nounset
 
-GIFT_DEBUG=1 # remove this line in prod
 debug_mode="${GIFT_DEBUG:-0}"
 gift_store="${GIFT_STORE:-/scratch/scratch/gift-store}"
 
